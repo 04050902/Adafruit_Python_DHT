@@ -21,6 +21,9 @@
 # SOFTWARE.
 import time
 import sys
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 import httplib, urllib
 import json
 import Adafruit_DHT
@@ -60,6 +63,8 @@ else:
 
 while True:
      h0,t0 = Adafruit_DHT.read_retry(sensor, pin)
+
+     SwitchStatus = GPIO.input(24)
 # Un-comment the line below to convert the temperature to Fahrenheit.
 # temperature = temperature * 9/5.0 + 32
 
@@ -71,11 +76,15 @@ while True:
           print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(t0, h0))
 
 	  payload = {"datapoints":[{"dataChnId":"Humidity","values":{"value":h0}},
-	         	{"dataChnId":"Temperature","values":{"value":t0}}]}
+                    {"dataChnId":"Temperature","values":{"value":t0}},
+                    {"dataChnId":"SwitchStatus","values":{"value":SwitchStatus}}]}
 	  post_to_mcs(payload)
 #          time.sleep(10)
 
      else:
           print('Failed to get reading. Try again!')
           sys.exit(1)
-
+     if( SwitchStatus == 0 ):
+          print('Button pressed')
+     else :
+          print('Button released')
